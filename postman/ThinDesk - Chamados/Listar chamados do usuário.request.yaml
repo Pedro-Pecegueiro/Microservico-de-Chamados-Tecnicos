@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/chamados/usuario/{{usuario}}"
+method: GET
+order: 3000

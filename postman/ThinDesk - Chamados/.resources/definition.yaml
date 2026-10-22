@@ -1,0 +1,7 @@
+$kind: collection
+description: Login e operações de abertura, consulta e resolução de chamados.
+variables:
+  baseUrl: http://localhost:8080
+  usuario: admin
+  senha: thindesk
+  chamadoId: ""

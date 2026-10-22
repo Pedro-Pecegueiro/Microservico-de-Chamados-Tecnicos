@@ -1,0 +1,23 @@
+$kind: http-request
+description: Devolve HTTP 201 e salva automaticamente o id para os pedidos de consulta e resolução.
+url: "{{baseUrl}}/api/chamados"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "titulo": "Impressora sem conexão",
+      "descricao": "A impressora do setor financeiro não aparece na rede."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      if (pm.response.code === 201) {
+        const chamado = pm.response.json();
+        pm.collectionVariables.set('chamadoId', chamado.id);
+        console.log('ID do chamado salvo na variável chamadoId:', chamado.id);
+      }
+    language: text/javascript
+order: 2000

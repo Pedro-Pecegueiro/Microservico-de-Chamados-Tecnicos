@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "ThinDesk - Chamados",
+    "description": "Login e operações de abertura, consulta e resolução de chamados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "usuario", "value": "admin" },
+    { "key": "senha", "value": "thindesk" },
+    { "key": "chamadoId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "{{usuario}}", "type": "text" },
+            { "key": "password", "value": "{{senha}}", "type": "text" }
+          ]
+        },
+        "url": "{{baseUrl}}/login",
+        "description": "Autentica e guarda o cookie JSESSIONID no cookie jar do Postman."
+      }
+    },
+    {
+      "name": "Abrir chamado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  const chamado = pm.response.json();",
+              "  pm.collectionVariables.set('chamadoId', chamado.id);",
+              "  console.log('ID do chamado salvo na variável chamadoId:', chamado.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Impressora sem conexão\",\n  \"descricao\": \"A impressora do setor financeiro não aparece na rede.\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/chamados",
+        "description": "Devolve HTTP 201 e salva automaticamente o id para os pedidos de consulta e resolução."
+      }
+    },
+    {
+      "name": "Listar chamados do usuário",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/chamados/usuario/{{usuario}}"
+      }
+    },
+    {
+      "name": "Consultar chamado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/chamados/{{chamadoId}}"
+      }
+    },
+    {
+      "name": "Resolver chamado",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"solucao\": \"Reiniciada a fila de impressão e validada a conexão.\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/chamados/{{chamadoId}}/resolver",
+        "description": "Exige o perfil TECNICO e grava status RESOLVIDO e dataResolucao no MongoDB. Uma segunda tentativa retorna HTTP 409."
+      }
+    }
+  ]
+}
+
+

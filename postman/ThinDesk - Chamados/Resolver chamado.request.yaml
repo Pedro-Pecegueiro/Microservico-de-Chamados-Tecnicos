@@ -1,0 +1,13 @@
+$kind: http-request
+description: Exige o perfil TECNICO e grava status RESOLVIDO e dataResolucao no MongoDB. Uma segunda tentativa retorna HTTP 409.
+url: "{{baseUrl}}/api/chamados/{{chamadoId}}/resolver"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "solucao": "Reiniciada a fila de impressão e validada a conexão."
+    }
+order: 5000

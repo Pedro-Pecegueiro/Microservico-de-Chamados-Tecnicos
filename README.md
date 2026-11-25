@@ -37,7 +37,7 @@ A versão `1.1.0` está definida no `pom.xml`.
 ## Acesso
 
 - **Aplicação publicada:** [ThinDesk no Railway](https://thindesk-app-production.up.railway.app)
-- **Repositório:** [Microserviço de Chamados Técnicos](https://github.com/Pedro-Pecegueiro/Microservico-de-Chamados-Tecnicos)
+
 
 Contas públicas para demonstração:
 

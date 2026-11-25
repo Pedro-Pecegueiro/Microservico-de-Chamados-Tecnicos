@@ -5,6 +5,7 @@ import com.pfc.thindesk.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ClienteService {
@@ -17,6 +18,16 @@ public class ClienteService {
     }
 
     public List<Cliente> listarClientes() {
-        return clienteRepository.findAll();
+        return clienteRepository.findAll().stream()
+                .sorted((a, b) -> a.getNome().compareToIgnoreCase(b.getNome()))
+                .toList();
+    }
+
+    public Optional<Cliente> buscarPorId(String id) {
+        return clienteRepository.findById(id);
+    }
+
+    public void excluir(String id) {
+        clienteRepository.deleteById(id);
     }
 }

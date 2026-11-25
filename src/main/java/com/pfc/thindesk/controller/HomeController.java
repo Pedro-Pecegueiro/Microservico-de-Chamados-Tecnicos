@@ -1,22 +1,16 @@
 package com.pfc.thindesk.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.pfc.thindesk.entity.Cliente;
 import com.pfc.thindesk.entity.Chamado;
-import com.pfc.thindesk.entity.HorarioAtendimento;
-import com.pfc.thindesk.service.ClienteService;
 import com.pfc.thindesk.service.ChamadoService;
-import com.pfc.thindesk.service.HorarioAtendimentoService;
-import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.ModelAndView;
+import java.util.List;
 
 @Controller
 public class HomeController {
@@ -25,14 +19,10 @@ public class HomeController {
             .ofPattern("dd/MM/yyyy HH:mm")
             .withZone(ZoneId.of("America/Sao_Paulo"));
 
-    private static final Logger log = LoggerFactory.getLogger(HomeController.class);
-
-    @Autowired
-    private ChamadoService chamadoService;
-    @Autowired
-    private ClienteService clienteService;
-    @Autowired
-    private HorarioAtendimentoService horarioAtendimentoService;
+    private final ChamadoService chamadoService;
+    public HomeController(ChamadoService chamadoService) {
+        this.chamadoService = chamadoService;
+    }
 
     @GetMapping("/login")
     public String login() {
@@ -40,8 +30,12 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public ModelAndView home() {
-        List<Chamado> chamados = chamadoService.listarChamados();
+    public ModelAndView home(Authentication authentication) {
+        boolean admin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        List<Chamado> chamados = admin
+                ? chamadoService.listarChamados()
+                : chamadoService.listarChamadosDoUsuario(authentication.getName());
         ModelAndView modelAndView = new ModelAndView("layout");
         modelAndView.addObject("totalChamados", chamados.size());
         modelAndView.addObject("chamadosAbertos", chamados.stream()
@@ -59,9 +53,6 @@ public class HomeController {
                         formatarData(chamado.getDataAbertura()),
                         chamado.getStatus()))
                 .toList());
-        String fragment = "home :: content";
-        log.info("Carregando fragmento: {}", fragment); // Log para depuração
-        modelAndView.addObject("content", fragment);
         return modelAndView;
     }
 
@@ -76,35 +67,4 @@ public class HomeController {
             String dataAbertura,
             String status) {
     }
-
-    @GetMapping("/chamados")
-    public String chamados(Model model) {
-        List<Chamado> chamados = chamadoService.listarChamados();
-        model.addAttribute("chamados", chamados); // Passa a lista para o modelo
-        String fragment = "chamados :: content";
-        log.info("Carregando fragmento: {}", fragment); // Log para depuração
-        model.addAttribute("content", fragment);
-        return "chamados";
-    }
-
-    @GetMapping("/clientes")
-    public String clientes(Model model) {
-        List<Cliente> clientes = clienteService.listarClientes();
-        model.addAttribute("clientes", clientes);
-        String fragment = "clientes :: content";
-        log.info("Carregando fragmento: {}", fragment); // Log para depuração
-        model.addAttribute("content", fragment);
-        return "clientes";
-    }
-    
-    @GetMapping("/ajustes-horarios")
-    public String horarios(Model model) {
-        List<HorarioAtendimento> horarios = horarioAtendimentoService.listarTodos();
-        model.addAttribute("ajustes-horarios", horarios);
-        String fragment = "ajustes-horarios :: content";
-        log.info("Carregando fragmento: {}", fragment); // Log para depuração
-        model.addAttribute("content", fragment);
-        return "ajustes-horarios";
-    }
-
 }

@@ -1,58 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Ajustes de Horários</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ThinDesk | Horário de Atendimento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Ajustes de Horários por Setor</h1>
-        <form th:action="@{/ajustes-horarios/salvar}" th:object="${novoHorario}" method="post" class="mb-4">
-            <div class="row">
-                <div class="col-md-3">
-                    <label for="setor">Setor</label>
-                    <input type="text" id="setor" name="setor" th:value="*{setor}" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="diaSemana">Dia</label>
-                    <input type="text" id="diaSemana" name="diaSemana" th:value="*{diaSemana}" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="horarioInicio">Início</label>
-                    <input type="time" id="horarioInicio" name="horarioInicio" th:value="*{horarioInicio}" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="horarioFim">Fim</label>
-                    <input type="time" id="horarioFim" name="horarioFim" th:value="*{horarioFim}" class="form-control" required>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </div>
-        </form>
-
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Setor</th>
-                    <th>Dia</th>
-                    <th>Início</th>
-                    <th>Fim</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
+<button class="toggle-btn btn btn-dark d-md-none" type="button" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+<main class="page-content">
+    <header class="page-heading">
+        <div><p class="dashboard-eyebrow mb-1">THINDESK / CONFIGURAÇÕES</p><h1 class="h2 mb-1">Horário de Atendimento</h1><p class="text-secondary mb-0">Cadastre e mantenha os horários de atendimento por setor.</p></div>
+    </header>
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+    <form class="card form-card mb-4" th:action="@{/ajustes-horarios/salvar}" th:object="${novoHorario}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <h2 class="h5 mb-3" th:text="${modoEdicao} ? 'Editar horário' : 'Novo horário'">Novo horário</h2>
+        <div class="row g-3">
+            <div class="col-12 col-md-3"><label class="form-label" for="setor">Setor</label><input class="form-control" id="setor" th:field="*{setor}" maxlength="80" required><div class="text-danger small" th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}"></div></div>
+            <div class="col-12 col-md-3"><label class="form-label" for="diaSemana">Dia da semana</label><input class="form-control" id="diaSemana" th:field="*{diaSemana}" maxlength="30" placeholder="Ex.: Segunda-feira" required><div class="text-danger small" th:if="${#fields.hasErrors('diaSemana')}" th:errors="*{diaSemana}"></div></div>
+            <div class="col-6 col-md-2"><label class="form-label" for="horarioInicio">Início</label><input class="form-control" id="horarioInicio" type="time" th:field="*{horarioInicio}" required><div class="text-danger small" th:if="${#fields.hasErrors('horarioInicio')}" th:errors="*{horarioInicio}"></div></div>
+            <div class="col-6 col-md-2"><label class="form-label" for="horarioFim">Término</label><input class="form-control" id="horarioFim" type="time" th:field="*{horarioFim}" required><div class="text-danger small" th:if="${#fields.hasErrors('horarioFim')}" th:errors="*{horarioFim}"></div></div>
+            <div class="col-12 col-md-2 d-flex align-items-end gap-2"><button class="btn btn-primary" type="submit" th:text="${modoEdicao} ? 'Salvar' : 'Cadastrar'">Cadastrar</button><a th:if="${modoEdicao}" class="btn btn-outline-secondary" th:href="@{/ajustes-horarios}">Cancelar</a></div>
+        </div>
+    </form>
+    <section class="card dashboard-table-card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Setor</th><th>Dia</th><th>Início</th><th>Término</th><th>Ações</th></tr></thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(horarios)}"><td colspan="5" class="text-center text-secondary py-5">Nenhum horário cadastrado.</td></tr>
                 <tr th:each="horario : ${horarios}">
-                    <td th:text="${horario?.setor}"></td>
-                    <td th:text="${horario?.diaSemana}"></td>
-                    <td th:text="${horario?.horarioInicio}"></td>
-                    <td th:text="${horario?.horarioFim}"></td>
-                    <td>
-                        <a th:href="@{/ajustes-horarios/deletar/{id}(id=${horario.id})}" class="btn btn-danger btn-sm">Deletar</a>
+                    <td th:text="${horario.setor}"></td><td th:text="${horario.diaSemana}"></td><td th:text="${horario.horarioInicio}"></td><td th:text="${horario.horarioFim}"></td>
+                    <td class="d-flex gap-2">
+                        <a class="btn btn-outline-primary btn-sm" th:href="@{/ajustes-horarios/editar/{id}(id=${horario.id})}">Editar</a>
+                        <form th:action="@{/ajustes-horarios/deletar/{id}(id=${horario.id})}" method="post" onsubmit="return confirm('Excluir este horário?')"><button class="btn btn-outline-danger btn-sm" type="submit">Excluir</button></form>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>

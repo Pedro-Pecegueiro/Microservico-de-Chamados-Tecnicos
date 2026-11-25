@@ -45,7 +45,7 @@ public class ChamadoController {
     @GetMapping("/usuario/{id}")
     public List<Chamado> listarChamadosDoUsuario(
             @PathVariable("id") String id, Authentication authentication) {
-        if (!id.equals(authentication.getName()) && !ehTecnico(authentication)) {
+        if (!id.equals(authentication.getName()) && !ehAdmin(authentication)) {
             throw new AccessDeniedException("A consulta de chamados de outro usuário não é permitida.");
         }
         return chamadoService.listarChamadosDoUsuario(id);
@@ -54,7 +54,7 @@ public class ChamadoController {
     @GetMapping("/{id}")
     public Chamado consultarChamado(@PathVariable("id") String id, Authentication authentication) {
         Chamado chamado = chamadoService.buscarPorId(id);
-        if (!authentication.getName().equals(chamado.getSolicitante()) && !ehTecnico(authentication)) {
+        if (!authentication.getName().equals(chamado.getSolicitante()) && !ehAdmin(authentication)) {
             throw new AccessDeniedException("A consulta deste chamado não é permitida.");
         }
         return chamado;
@@ -68,8 +68,8 @@ public class ChamadoController {
         return chamadoService.resolverChamado(id, request.getSolucao(), authentication.getName());
     }
 
-    private boolean ehTecnico(Authentication authentication) {
+    private boolean ehAdmin(Authentication authentication) {
         return authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_TECNICO"));
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

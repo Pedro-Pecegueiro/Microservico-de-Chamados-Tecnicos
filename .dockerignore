@@ -1,6 +1,6 @@
+target
 .git
 .idea
-target
-*.iml
 .env
-**/.DS_Store
+.env.*
+!.env.example

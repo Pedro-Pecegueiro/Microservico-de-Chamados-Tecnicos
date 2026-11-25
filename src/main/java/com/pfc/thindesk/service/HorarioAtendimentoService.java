@@ -2,15 +2,19 @@ package com.pfc.thindesk.service;
 
 import com.pfc.thindesk.entity.HorarioAtendimento;
 import com.pfc.thindesk.repository.HorarioAtendimentoRepository;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class HorarioAtendimentoService {
 
-    @Autowired
-    private HorarioAtendimentoRepository horarioAtendimentoRepository;
+    private final HorarioAtendimentoRepository horarioAtendimentoRepository;
+
+    public HorarioAtendimentoService(HorarioAtendimentoRepository horarioAtendimentoRepository) {
+        this.horarioAtendimentoRepository = horarioAtendimentoRepository;
+    }
 
     public List<HorarioAtendimento> listarTodos() {
         return horarioAtendimentoRepository.findAll();
@@ -18,6 +22,10 @@ public class HorarioAtendimentoService {
 
     public List<HorarioAtendimento> listarPorSetor(String setor) {
         return horarioAtendimentoRepository.findBySetor(setor);
+    }
+
+    public Optional<HorarioAtendimento> buscarPorId(String id) {
+        return horarioAtendimentoRepository.findById(id);
     }
 
     public HorarioAtendimento salvar(HorarioAtendimento horarioAtendimento) {

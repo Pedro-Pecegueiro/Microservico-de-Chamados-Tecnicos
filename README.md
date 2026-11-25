@@ -1,90 +1,122 @@
 # ThinDesk — Sistema de chamados técnicos
 
-Aplicação acadêmica baseada no ThinDesk fornecido na disciplina. Mantém a interface e o login do projeto original e acrescenta painel de acompanhamento, API REST para chamados e persistência em MongoDB.
+Aplicação web desenvolvida a partir do ThinDesk apresentado na disciplina. O sistema mantém o login e o painel de chamados e permite abrir, acompanhar e resolver solicitações com dados persistidos no MongoDB.
 
 ## Versão
 
-**Versão atual: 1.0.0**
+**1.1.0**
 
-O projeto usa versionamento semântico no formato `MAJOR.MINOR.PATCH`:
+O projeto segue versionamento semântico no formato `MAJOR.MINOR.PATCH`:
 
-- `MAJOR`: mudança incompatível com versões anteriores;
-- `MINOR`: funcionalidade nova compatível com o que já existia;
-- `PATCH`: correção compatível, sem adicionar funcionalidade incompatível.
+- `MAJOR`: mudança incompatível com versões anteriores.
+- `MINOR`: funcionalidade nova compatível.
+- `PATCH`: correção compatível.
 
-Uma versão de pré-lançamento pode usar um sufixo, como `1.1.0-beta.1`. A versão da aplicação é definida no `pom.xml`.
+A versão `1.1.0` está definida no `pom.xml`.
 
 ## Funcionalidades
 
-- Login por sessão com Spring Security.
-- Dashboard com totais de chamados abertos, resolvidos e recentes, carregados do MongoDB.
-- Abertura de chamado com título e descrição; solicitante, data e status inicial são definidos pelo servidor.
-- Consulta individual e listagem de chamados por solicitante.
-- Resolução por técnico, com solução e data da resolução.
-- Validação dos dados e bloqueio de alterações depois da resolução.
+- Login com sessão e controle de acesso por perfil.
+- Perfil **USUÁRIO**: abre chamados e acompanha, edita ou cancela somente os próprios chamados que ainda estejam abertos.
+- Perfil **ADMIN**: consulta a fila completa, registra a solução dos chamados, cadastra e desativa contas de usuário, gerencia clientes e configura horários de atendimento.
+- Registro automático do solicitante, da data de abertura e do status `ABERTO`.
+- Registro da solução, do administrador responsável, da data de resolução e do status `RESOLVIDO`.
+- Bloqueio de edição, cancelamento ou nova resolução depois que um chamado for resolvido.
+- Validação de campos de chamados, contas, clientes e horários.
+- Dashboard com totais e chamados recentes do MongoDB.
 
 ## Tecnologias
 
 - Java 21
 - Spring Boot 3.4
 - Spring MVC, Spring Security e Thymeleaf
-- Spring Data MongoDB
+- Spring Data MongoDB e MongoDB
 - Maven Wrapper
 - Postman
 
-## Requisitos para executar localmente
+## Acesso
 
-- JDK 21 ou superior
-- MongoDB ativo em `localhost:27017`, ou uma URI MongoDB configurada na variável `MONGODB_URI`
+- **Aplicação publicada:** [ThinDesk no Railway](https://thindesk-app-production.up.railway.app)
+- **Repositório:** [Microserviço de Chamados Técnicos](https://github.com/Pedro-Pecegueiro/Microservico-de-Chamados-Tecnicos)
 
-O banco padrão é `thindesk`; a coleção de chamados é `chamados`.
+Contas públicas para demonstração:
 
-### Configuração
+| Perfil | Usuário | Senha | Permissões principais |
+| --- | --- | --- | --- |
+| USUÁRIO | `usuario` | `usuario123` | Abrir e acompanhar os próprios chamados. |
+| ADMIN | `admin` | `admin123` | Acessar todos os chamados, resolvê-los e administrar contas, clientes e horários. |
 
-O arquivo `.env.example` mostra os valores de demonstração. Configure as variáveis no terminal antes de iniciar, se precisar usar valores diferentes:
+Essas credenciais são destinadas à avaliação acadêmica. As senhas são armazenadas com hash BCrypt no MongoDB. A aplicação cria as duas contas na primeira inicialização se elas ainda não existirem.
+
+## Execução local
+
+### Requisitos
+
+- JDK 21
+- MongoDB em execução
+- PowerShell no Windows
+
+O banco padrão chama-se `thindesk`. A aplicação usa `mongodb://localhost:27017/thindesk` quando `MONGODB_URI` não é definida.
+
+### Configuração e inicialização
+
+Na pasta raiz do projeto, configure as variáveis e inicie a aplicação:
 
 ```powershell
 $env:MONGODB_URI = "mongodb://localhost:27017/thindesk"
-$env:THINDESK_USER = "admin"
-$env:THINDESK_PASSWORD = "thindesk"
-```
-
-As credenciais padrão são apenas para demonstração local. Em produção, configure `THINDESK_USER` e `THINDESK_PASSWORD` no serviço de hospedagem. Não coloque credenciais privadas ou URI com senha no GitHub.
-
-### Iniciar
-
-Na pasta do projeto, execute:
-
-```powershell
+$env:THINDESK_USER = "usuario"
+$env:THINDESK_PASSWORD = "usuario123"
+$env:THINDESK_ADMIN_USER = "admin"
+$env:THINDESK_ADMIN_PASSWORD = "admin123"
 .\mvnw.cmd spring-boot:run
 ```
 
-A aplicação ficará disponível em `http://localhost:8080`. Entre com o usuário e a senha configurados. O padrão local é `admin` / `thindesk`.
+O arquivo `.env.example` registra os mesmos nomes e valores de demonstração, mas o Spring Boot não carrega arquivos `.env` automaticamente. As variáveis devem estar definidas no ambiente antes de iniciar a aplicação.
+
+A aplicação fica disponível em `http://localhost:8080`. Depois de entrar, a página inicial mostra o dashboard.
 
 Para gerar o pacote executável:
 
 ```powershell
-.\mvnw.cmd -B package
+.\mvnw.cmd -B -DskipTests package
 ```
 
 ## Dashboard
 
-A tela inicial mantém o layout do ThinDesk e apresenta dados consultados do MongoDB.
+O painel mantém a estrutura visual do ThinDesk e mostra os dados disponíveis no banco.
 
-![Dashboard do ThinDesk em execução](docs/dashboard.png)
+![Dashboard do ThinDesk](docs/dashboard.png)
 
-## API REST
+## Chamados pela aplicação
 
-Os endpoints de chamados exigem login. Para resolver um chamado, a conta precisa ter o perfil de técnico.
+1. Entre com a conta **USUÁRIO** ou **ADMIN**.
+2. Abra **Chamados** no menu e selecione **Novo chamado**.
+3. Informe título e descrição. O sistema preenche solicitante, data e status automaticamente.
+4. O perfil USUÁRIO visualiza somente os chamados que abriu. Chamados ainda abertos podem ser editados ou cancelados por seu solicitante.
+5. Entre com a conta **ADMIN** para consultar a fila completa e informar a solução de um chamado aberto.
+6. Depois da resolução, o chamado exibe o status `RESOLVIDO` e a data correspondente; novas alterações são recusadas.
 
-| Método | Endpoint | Descrição |
+O ADMIN também encontra as telas de **Clientes**, **Horário de Atendimento** e **Contas de usuário** no menu lateral. Horários inválidos, com término anterior ou igual ao início, não são salvos.
+
+## API REST de chamados
+
+Os endpoints exigem login. O perfil USUÁRIO só consulta chamados próprios; o ADMIN pode consultar qualquer solicitante ou chamado. Somente o ADMIN pode usar a operação de resolução.
+
+| Método | Endpoint | Permissão e resultado |
 | --- | --- | --- |
-| `POST` | `/api/chamados` | Abre um chamado. Retorna `201 Created`. |
-| `GET` | `/api/chamados/usuario/{id}` | Lista chamados do solicitante autenticado. |
-| `GET` | `/api/chamados/{id}` | Consulta os dados e o status do chamado. |
-| `PUT` | `/api/chamados/{id}/resolver` | Registra a solução e conclui o chamado. |
+| `POST` | `/api/chamados` | USUÁRIO ou ADMIN abre chamado; retorna `201 Created`. |
+| `GET` | `/api/chamados/usuario/{id}` | O usuário consulta a própria lista; ADMIN pode informar qualquer nome de usuário. |
+| `GET` | `/api/chamados/{id}` | O usuário consulta o próprio chamado; ADMIN pode consultar qualquer chamado. |
+| `PUT` | `/api/chamados/{id}/resolver` | ADMIN registra a solução e conclui um chamado aberto. |
 
-Exemplo de abertura:
+Em `/api/chamados/usuario/{id}`, `{id}` é o nome de usuário. Nos outros endpoints, `{id}` é o identificador MongoDB retornado ao abrir o chamado.
+
+### Abrir chamado
+
+```http
+POST /api/chamados
+Content-Type: application/json
+```
 
 ```json
 {
@@ -93,34 +125,67 @@ Exemplo de abertura:
 }
 ```
 
-Exemplo de resolução:
+O corpo aceita título e descrição. Solicitante, data de abertura e status inicial `ABERTO` são definidos pelo servidor.
+
+### Resolver chamado
+
+```http
+PUT /api/chamados/{id}/resolver
+Content-Type: application/json
+```
 
 ```json
 {
-  "solucao": "Verificada a memória e a temperatura; substituído o módulo com falha e validado o funcionamento."
+  "solucao": "Verificada a memória e substituído o módulo com falha."
 }
 ```
 
-O servidor preenche automaticamente o solicitante, a data de abertura e o status `ABERTO`. Na resolução, registra o técnico, a solução, a data e o status `RESOLVIDO`. Uma segunda tentativa de alteração retorna `409 Conflict`.
+O ADMIN autenticado fica registrado como responsável pela resolução. Uma segunda tentativa para um chamado resolvido retorna `409 Conflict`.
 
-### Postman
+### Respostas de erro
 
-Importe `postman/ThinDesk.postman_collection.json` pelo menu **Import → Files**. A coleção inclui login, abertura, listagem, consulta e resolução. Após abrir um chamado, ela guarda o ID retornado para as requisições seguintes.
+- Dados obrigatórios ausentes ou inválidos: `400 Bad Request`.
+- Requisição de API sem login: `401 Unauthorized`.
+- Perfil sem permissão: `403 Forbidden`.
+- Chamado não encontrado: `404 Not Found`.
+- Tentativa de alterar chamado resolvido: `409 Conflict`.
 
-## Banco de dados
+## Postman
 
-Para conferir a persistência local pelo MongoDB Compass, conecte-se a `mongodb://localhost:27017`, abra o banco `thindesk` e a coleção `chamados`. Os documentos incluem título, descrição, solicitante, status e datas; depois da resolução também incluem a solução e o técnico.
+A coleção está em `postman/ThinDesk.postman_collection.json`.
 
-## Publicação
+1. No Postman, selecione **Import** e abra esse arquivo.
+2. A variável `baseUrl` já aponta para a aplicação publicada; para executar localmente, altere-a para `http://localhost:8080`.
+3. Execute **Login** com as variáveis `usuario` e `senha` para entrar como USUÁRIO.
+4. Execute **Abrir chamado**. A resposta contém o ID e a coleção o salva em `chamadoId`.
+5. Use **Listar chamados do usuário** e **Consultar chamado** para acompanhar o registro.
+6. Execute **Login do admin** com as variáveis `admin` e `senhaAdmin` e, em seguida, **Resolver chamado**.
+7. Execute **Consultar chamado** novamente para ver o status `RESOLVIDO`, a solução e a data de resolução. Uma nova tentativa de resolução retorna `409`.
 
-O projeto está preparado para construção pelo `Dockerfile` e usa a porta fornecida pela variável `PORT`. No Railway, configure:
+O Postman mantém a sessão usando o cookie retornado pelo formulário de login.
 
-- `MONGODB_URI`: URI do MongoDB persistente;
-- `THINDESK_USER`: usuário público de demonstração;
-- `THINDESK_PASSWORD`: senha pública de demonstração.
+## MongoDB
 
-O login de demonstração é compartilhado e permite acessar a aplicação publicada. Use-o somente para a demonstração acadêmica; não reutilize senha pessoal. O link público será registrado aqui depois que o deploy for publicado e verificado.
+A conexão é definida pela variável `MONGODB_URI`. No ambiente local, o padrão é `mongodb://localhost:27017/thindesk`. No MongoDB Compass, conecte-se a `mongodb://localhost:27017` e abra o banco `thindesk`.
 
-## Repositório
+As principais coleções são:
 
-[Microserviço de Chamados Técnicos no GitHub](https://github.com/Pedro-Pecegueiro/Microservico-de-Chamados-Tecnicos)
+- `chamados`: título, descrição, solicitante, status, datas, solução e responsável pela resolução.
+- `contasAcesso`: nome de usuário, perfil, situação da conta e hash BCrypt da senha.
+- `clientes`: clientes cadastrados pelo ADMIN.
+- `horariosAtendimento`: horários de atendimento por setor e dia da semana.
+
+## Publicação no Railway
+
+A aplicação está publicada em [https://thindesk-app-production.up.railway.app](https://thindesk-app-production.up.railway.app) e utiliza o serviço MongoDB do projeto ThinDesk-M2. O `Dockerfile` prepara a aplicação para execução no Railway.
+
+Variáveis usadas pela aplicação:
+
+| Variável | Finalidade |
+| --- | --- |
+| `MONGODB_URI` | URI de conexão com o MongoDB. No Railway, está ligada ao serviço MongoDB. |
+| `THINDESK_USER` | Nome da conta pública de demonstração USUÁRIO. |
+| `THINDESK_PASSWORD` | Senha pública de demonstração USUÁRIO. |
+| `THINDESK_ADMIN_USER` | Nome da conta pública de demonstração ADMIN. |
+| `THINDESK_ADMIN_PASSWORD` | Senha pública de demonstração ADMIN. |
+| `PORT` | Porta informada pelo Railway. |

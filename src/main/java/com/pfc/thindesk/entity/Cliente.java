@@ -2,14 +2,21 @@ package com.pfc.thindesk.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Document(collection = "clientes")
 public class Cliente {
     
     @Id
     private String id;
+    @NotBlank(message = "Informe o nome do cliente.")
+    @Size(max = 100, message = "O nome deve ter até 100 caracteres.")
     private String nome;
+    @Size(max = 30, message = "O telefone deve ter até 30 caracteres.")
     private String telefone;
+    @NotBlank(message = "Informe o setor.")
+    @Size(max = 80, message = "O setor deve ter até 80 caracteres.")
     private String setor;
 
     public String getId() {

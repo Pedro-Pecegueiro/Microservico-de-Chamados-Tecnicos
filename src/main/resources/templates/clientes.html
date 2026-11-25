@@ -1,50 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <title>Lista de Clientes</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-        <link rel="stylesheet" th:href="@{/css/style.css}">
-    </head>
-
-    <body>
-        <!-- Sidebar incluído como fragmento -->
-        <aside>
-            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
-        </aside>
-
-        <!-- Botão para abrir/fechar a sidebar em telas pequenas -->
-        <div class="toggle-btn btn btn-dark d-md-none">
-            <span>&#9776;</span>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ThinDesk | Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<button class="toggle-btn btn btn-dark d-md-none" type="button" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+<main class="page-content">
+    <header class="page-heading">
+        <div><p class="dashboard-eyebrow mb-1">THINDESK / CADASTROS</p><h1 class="h2 mb-1">Clientes</h1><p class="text-secondary mb-0">Gerencie os clientes e seus setores de atendimento.</p></div>
+    </header>
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+    <form class="card form-card mb-4" th:action="@{/clientes/salvar}" th:object="${cliente}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <h2 class="h5 mb-3" th:text="${modoEdicao} ? 'Editar cliente' : 'Novo cliente'">Novo cliente</h2>
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-4"><label class="form-label" for="nome">Nome</label><input class="form-control" id="nome" th:field="*{nome}" maxlength="100" required><div class="text-danger small" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div></div>
+            <div class="col-12 col-md-3"><label class="form-label" for="telefone">Telefone</label><input class="form-control" id="telefone" th:field="*{telefone}" maxlength="30"></div>
+            <div class="col-12 col-md-3"><label class="form-label" for="setor">Setor</label><input class="form-control" id="setor" th:field="*{setor}" maxlength="80" required><div class="text-danger small" th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}"></div></div>
+            <div class="col-12 col-md-2 d-flex gap-2"><button class="btn btn-primary" type="submit" th:text="${modoEdicao} ? 'Salvar' : 'Cadastrar'">Cadastrar</button><a th:if="${modoEdicao}" class="btn btn-outline-secondary" th:href="@{/clientes}">Cancelar</a></div>
         </div>
-        
-        <div class="container mt-4" th:fragment="content">
-            <h1 class="mt-4">Clientes</h1>
-            <table class="table table-bordered table-striped mt-3">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Telefone</th>
-                        <th>Setor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Exemplo de conteúdo dinâmico -->
-                    <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.nome}"></td>
-                        <td th:text="${cliente.telefone}"></td>
-                        <td th:text="${cliente.setor}"></td>
-                        <td>
-                            <a th:href="@{'/clientes/novo/'}" class="btn btn-primary btn-sm">Novo</a>
-                            <a th:href="@{'/clientes/editar/' + ${cliente.id}}" class="btn btn-warning btn-sm">Editar</a>
-                            <a th:href="@{'/clientes/deletar/' + ${cliente.id}}" class="btn btn-danger btn-sm">Excluir</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <script th:src="@{/js/script.js}"></script>
-    </body>
+    </form>
+    <section class="card dashboard-table-card">
+        <div class="table-responsive"><table class="table align-middle mb-0">
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Setor</th><th>Ações</th></tr></thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(clientes)}"><td colspan="4" class="text-center text-secondary py-5">Nenhum cliente cadastrado.</td></tr>
+            <tr th:each="item : ${clientes}">
+                <td th:text="${item.nome}"></td><td th:text="${#strings.isEmpty(item.telefone) ? '—' : item.telefone}"></td><td th:text="${item.setor}"></td>
+                <td class="d-flex gap-2"><a class="btn btn-outline-primary btn-sm" th:href="@{/clientes/editar/{id}(id=${item.id})}">Editar</a><form th:action="@{/clientes/excluir/{id}(id=${item.id})}" method="post" onsubmit="return confirm('Excluir este cliente?')"><button class="btn btn-outline-danger btn-sm" type="submit">Excluir</button></form></td>
+            </tr>
+            </tbody>
+        </table></div>
+    </section>
+</main>
+<script th:src="@{/js/script.js}"></script>
+</body>
 </html>

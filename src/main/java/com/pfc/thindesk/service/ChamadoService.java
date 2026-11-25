@@ -55,20 +55,24 @@ public class ChamadoService {
         return chamadoRepository.save(chamado);
     }
 
-    /** Mantém a edição legada protegida contra mudanças após a resolução. */
-    public Chamado atualizarChamado(String id, Chamado chamadoAtualizado) {
+    public Chamado atualizarChamado(String id, String titulo, String descricao) {
         Chamado chamado = buscarPorId(id);
-        if ("RESOLVIDO".equalsIgnoreCase(chamado.getStatus())) {
-            throw new RegraChamadoException("Chamados resolvidos não podem ser alterados novamente.");
-        }
-        if ("RESOLVIDO".equalsIgnoreCase(chamadoAtualizado.getStatus())) {
-            throw new RegraChamadoException("Use o endpoint de resolução para concluir um chamado.");
-        }
+        validarChamadoAberto(chamado);
 
-        chamado.setDescricao(chamadoAtualizado.getDescricao());
-        chamado.setStatus(chamadoAtualizado.getStatus());
-        chamado.setTipo(chamadoAtualizado.getTipo());
-        chamado.setTecnico(chamadoAtualizado.getTecnico());
+        chamado.setTitulo(titulo.trim());
+        chamado.setDescricao(descricao.trim());
         return chamadoRepository.save(chamado);
+    }
+
+    public void cancelarChamado(String id) {
+        Chamado chamado = buscarPorId(id);
+        validarChamadoAberto(chamado);
+        chamadoRepository.delete(chamado);
+    }
+
+    private void validarChamadoAberto(Chamado chamado) {
+        if (!"ABERTO".equalsIgnoreCase(chamado.getStatus())) {
+            throw new RegraChamadoException("Somente chamados ABERTOS podem ser alterados ou cancelados.");
+        }
     }
 }

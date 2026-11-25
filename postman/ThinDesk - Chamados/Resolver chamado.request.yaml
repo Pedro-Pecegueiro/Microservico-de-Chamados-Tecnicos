@@ -1,5 +1,5 @@
 $kind: http-request
-description: Exige o perfil TECNICO e grava status RESOLVIDO e dataResolucao no MongoDB. Uma segunda tentativa retorna HTTP 409.
+description: Exige o perfil ADMIN e grava status RESOLVIDO e dataResolucao no MongoDB. Uma segunda tentativa retorna HTTP 409.
 url: "{{baseUrl}}/api/chamados/{{chamadoId}}/resolver"
 method: PUT
 headers:

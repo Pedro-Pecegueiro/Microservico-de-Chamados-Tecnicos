@@ -5,7 +5,7 @@ RUN mvn -B -DskipTests package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/target/thindesk-1.0.0.war /app/thindesk.war
+COPY --from=build /workspace/target/thindesk-*.war /app/thindesk.war
 ENV PORT=8080
 EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "exec java -jar /app/thindesk.war --server.port=${PORT:-8080}"]

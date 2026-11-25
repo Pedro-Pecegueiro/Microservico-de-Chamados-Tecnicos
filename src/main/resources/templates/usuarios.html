@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ThinDesk | Contas de usuário</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<button class="toggle-btn btn btn-dark d-md-none" type="button" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+<main class="page-content">
+    <header class="page-heading">
+        <div><p class="dashboard-eyebrow mb-1">THINDESK / ADMINISTRAÇÃO</p><h1 class="h2 mb-1">Contas de usuário</h1><p class="text-secondary mb-0">Crie contas comuns e desative contas que não precisam mais de acesso.</p></div>
+    </header>
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+    <form class="card form-card mb-4" th:action="@{/usuarios}" th:object="${form}" method="post">
+        <h2 class="h5 mb-3">Criar conta comum</h2>
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-5"><label class="form-label" for="usuario">Nome de usuário</label><input class="form-control" id="usuario" th:field="*{usuario}" minlength="3" maxlength="60" required><div class="text-danger small" th:if="${#fields.hasErrors('usuario')}" th:errors="*{usuario}"></div></div>
+            <div class="col-12 col-md-5"><label class="form-label" for="senha">Senha</label><input class="form-control" id="senha" type="password" th:field="*{senha}" minlength="8" maxlength="100" required><div class="text-danger small" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></div></div>
+            <div class="col-12 col-md-2"><button class="btn btn-primary" type="submit">Criar conta</button></div>
+        </div>
+    </form>
+    <section class="card dashboard-table-card">
+        <div class="table-responsive"><table class="table align-middle mb-0">
+            <thead><tr><th>Usuário</th><th>Perfil</th><th>Acesso</th></tr></thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(contas)}"><td colspan="3" class="text-center text-secondary py-5">Nenhuma conta cadastrada.</td></tr>
+            <tr th:each="conta : ${contas}">
+                <td th:text="${conta.usuario}"></td><td th:text="${conta.perfil == 'ADMIN' ? 'Administrador' : 'Usuário'}"></td>
+                <td><span th:if="${conta.perfil == 'ADMIN'}" class="badge text-bg-primary">Conta administrativa</span>
+                    <form th:if="${conta.perfil != 'ADMIN'}" th:action="@{/usuarios/desativar/{id}(id=${conta.id})}" method="post" onsubmit="return confirm('Desativar esta conta?')"><button class="btn btn-outline-danger btn-sm" type="submit">Desativar</button></form></td>
+            </tr>
+            </tbody>
+        </table></div>
+    </section>
+</main>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

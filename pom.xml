@@ -4,23 +4,16 @@
 
     <groupId>com.pfc</groupId>
     <artifactId>thindesk</artifactId>
-    <version>1.0-alpha</version>
+    <version>1.0.0</version>
     <packaging>war</packaging>
     <name>thindesk</name>
 
     <properties>
-        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
     </properties>
     
     <dependencies>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>8.0.1</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- Spring Boot Web para a API REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -72,6 +65,13 @@
                 <configuration>
                     <mainClass>com.pfc.ThindeskApplication</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -91,31 +91,6 @@
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.8.1</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${endorsed.dir}</outputDirectory>
-                            <silent>true</silent>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>javax</groupId>
-                                    <artifactId>javaee-endorsed-api</artifactId>
-                                    <version>7.0</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -7,4 +7,5 @@ import java.util.List;
 public interface ChamadoRepository extends MongoRepository<Chamado, String> {
     List<Chamado> findByStatus(String status);
     List<Chamado> findBySolicitanteOrderByDataAberturaDesc(String solicitante);
+    List<Chamado> findAllByOrderByDataAberturaDesc();
 }

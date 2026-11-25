@@ -1,6 +1,88 @@
-<div class="container-fluid vh-100 d-flex justify-content-center align-items-center" th:fragment="content">
-    <div class="text-center">
-        <h1>Bem-vindo ao</h1>
-        <img th:src="@{/images/logo.png}" alt="Logo" width="500" height="500">
-    </div>
+<div class="container-fluid dashboard-page py-4 px-4" th:fragment="content">
+    <header class="dashboard-heading d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <p class="dashboard-eyebrow mb-1">THINDESK / ATENDIMENTO</p>
+            <h1 class="h2 mb-1">Painel de chamados</h1>
+            <p class="text-secondary mb-0">Acompanhe os chamados registrados no sistema.</p>
+        </div>
+        <a class="btn btn-primary dashboard-action" th:href="@{/chamados}">
+            <i class="bi bi-headset me-2"></i>Consultar chamados
+        </a>
+    </header>
+
+    <section class="row g-3 mb-4" aria-label="Resumo dos chamados">
+        <div class="col-12 col-md-4">
+            <article class="card dashboard-metric h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="dashboard-metric-label mb-2">Total de chamados</p>
+                        <p class="dashboard-metric-value mb-0" th:text="${totalChamados}">0</p>
+                    </div>
+                    <span class="dashboard-metric-icon metric-total"><i class="bi bi-ticket-perforated"></i></span>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="card dashboard-metric h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="dashboard-metric-label mb-2">Abertos</p>
+                        <p class="dashboard-metric-value mb-0" th:text="${chamadosAbertos}">0</p>
+                    </div>
+                    <span class="dashboard-metric-icon metric-open"><i class="bi bi-hourglass-split"></i></span>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="card dashboard-metric h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="dashboard-metric-label mb-2">Resolvidos</p>
+                        <p class="dashboard-metric-value mb-0" th:text="${chamadosResolvidos}">0</p>
+                    </div>
+                    <span class="dashboard-metric-icon metric-resolved"><i class="bi bi-check2-circle"></i></span>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="card dashboard-table-card">
+        <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div>
+                <h2 class="h5 mb-1">Chamados recentes</h2>
+                <p class="small text-secondary mb-0">Últimos registros salvos no banco de dados.</p>
+            </div>
+            <a class="small text-decoration-none" th:href="@{/chamados}">Ver todos</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Chamado</th>
+                        <th scope="col">Solicitante</th>
+                        <th scope="col">Abertura</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(chamadosRecentes)}">
+                        <td colspan="4" class="text-center text-secondary py-5">Nenhum chamado cadastrado.</td>
+                    </tr>
+                    <tr th:each="chamado : ${chamadosRecentes}">
+                        <td>
+                            <div class="fw-semibold" th:text="${chamado.titulo != null ? chamado.titulo : 'Chamado sem título'}">Título do chamado</div>
+                            <div class="small text-secondary text-truncate dashboard-description" th:text="${chamado.descricao}">Descrição</div>
+                        </td>
+                        <td th:text="${chamado.solicitante != null ? chamado.solicitante : '—'}">Solicitante</td>
+                        <td class="small" th:text="${chamado.dataAbertura}">Data</td>
+                        <td>
+                            <span th:if="${'ABERTO'.equalsIgnoreCase(chamado.status)}" class="badge rounded-pill text-bg-warning">ABERTO</span>
+                            <span th:if="${'RESOLVIDO'.equalsIgnoreCase(chamado.status)}" class="badge rounded-pill text-bg-success">RESOLVIDO</span>
+                            <span th:if="${chamado.status == null or (!'ABERTO'.equalsIgnoreCase(chamado.status) and !'RESOLVIDO'.equalsIgnoreCase(chamado.status))}" class="badge rounded-pill text-bg-secondary" th:text="${chamado.status != null ? chamado.status : 'SEM STATUS'}">STATUS</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>

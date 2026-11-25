@@ -31,7 +31,7 @@ public class ChamadoService {
     }
 
     public List<Chamado> listarChamados() {
-        return chamadoRepository.findAll();
+        return chamadoRepository.findAllByOrderByDataAberturaDesc();
     }
 
     public Chamado buscarPorId(String id) {

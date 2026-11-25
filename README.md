@@ -1,97 +1,126 @@
-# ThinDesk — Chamados Técnicos
+# ThinDesk — Sistema de chamados técnicos
 
-API REST integrada ao projeto ThinDesk para abertura, consulta e resolução de chamados técnicos. A aplicação usa Java, Spring Boot, Spring Security e MongoDB. O fluxo de login existente é mantido e os endpoints trabalham com a sessão autenticada.
+Aplicação acadêmica baseada no ThinDesk fornecido na disciplina. Mantém a interface e o login do projeto original e acrescenta painel de acompanhamento, API REST para chamados e persistência em MongoDB.
 
-## Tecnologias e requisitos
+## Versão
+
+**Versão atual: 1.0.0**
+
+O projeto usa versionamento semântico no formato `MAJOR.MINOR.PATCH`:
+
+- `MAJOR`: mudança incompatível com versões anteriores;
+- `MINOR`: funcionalidade nova compatível com o que já existia;
+- `PATCH`: correção compatível, sem adicionar funcionalidade incompatível.
+
+Uma versão de pré-lançamento pode usar um sufixo, como `1.1.0-beta.1`. A versão da aplicação é definida no `pom.xml`.
+
+## Funcionalidades
+
+- Login por sessão com Spring Security.
+- Dashboard com totais de chamados abertos, resolvidos e recentes, carregados do MongoDB.
+- Abertura de chamado com título e descrição; solicitante, data e status inicial são definidos pelo servidor.
+- Consulta individual e listagem de chamados por solicitante.
+- Resolução por técnico, com solução e data da resolução.
+- Validação dos dados e bloqueio de alterações depois da resolução.
+
+## Tecnologias
 
 - Java 21
 - Spring Boot 3.4
+- Spring MVC, Spring Security e Thymeleaf
+- Spring Data MongoDB
 - Maven Wrapper
-- MongoDB local ativo na porta `27017`
-- Postman para enviar as requisições
+- Postman
 
-O banco usado por padrão é `thindesk`, e os documentos de chamados ficam na coleção `chamados`.
+## Requisitos para executar localmente
 
-## Executar a aplicação
+- JDK 21 ou superior
+- MongoDB ativo em `localhost:27017`, ou uma URI MongoDB configurada na variável `MONGODB_URI`
 
-1. Inicie o serviço do MongoDB.
-2. Abra o PowerShell na pasta do projeto.
-3. Execute:
+O banco padrão é `thindesk`; a coleção de chamados é `chamados`.
+
+### Configuração
+
+O arquivo `.env.example` mostra os valores de demonstração. Configure as variáveis no terminal antes de iniciar, se precisar usar valores diferentes:
+
+```powershell
+$env:MONGODB_URI = "mongodb://localhost:27017/thindesk"
+$env:THINDESK_USER = "admin"
+$env:THINDESK_PASSWORD = "thindesk"
+```
+
+As credenciais padrão são apenas para demonstração local. Em produção, configure `THINDESK_USER` e `THINDESK_PASSWORD` no serviço de hospedagem. Não coloque credenciais privadas ou URI com senha no GitHub.
+
+### Iniciar
+
+Na pasta do projeto, execute:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-A API ficará disponível em `http://localhost:8080`.
+A aplicação ficará disponível em `http://localhost:8080`. Entre com o usuário e a senha configurados. O padrão local é `admin` / `thindesk`.
 
-A conexão padrão é `mongodb://localhost:27017/thindesk`. Para usar outro endereço, configure a variável de ambiente `MONGODB_URI`.
+Para gerar o pacote executável:
 
-## Autenticação
+```powershell
+.\mvnw.cmd -B package
+```
 
-Os endpoints de chamados exigem uma sessão autenticada. A aplicação mantém o login por formulário do Spring Security em `/login`.
+## Dashboard
 
-Para a execução local, o usuário padrão é `admin` e a senha é `thindesk`. Esses valores podem ser substituídos por `THINDESK_USER` e `THINDESK_PASSWORD`. Na configuração local, esse usuário possui os perfis `USER` e `TECNICO`, permitindo demonstrar a abertura e a resolução.
+A tela inicial mantém o layout do ThinDesk e apresenta dados consultados do MongoDB.
 
-No Postman, execute primeiro a requisição **Login**. Ela envia usuário e senha como formulário e o Postman guarda o cookie de sessão para as requisições seguintes. O login pode terminar em um redirecionamento para a página inicial; as chamadas da API é que retornam os dados JSON dos chamados.
+![Dashboard do ThinDesk em execução](docs/dashboard.png)
 
-## Importar e usar no Postman
+## API REST
 
-A coleção está em `postman/ThinDesk.postman_collection.json`.
+Os endpoints de chamados exigem login. Para resolver um chamado, a conta precisa ter o perfil de técnico.
 
-No Postman, selecione **Import**, escolha **Files** e abra esse arquivo. A coleção contém as requisições **Login**, **Abrir chamado**, **Listar chamados do usuário**, **Consultar chamado** e **Resolver chamado**. A variável `baseUrl` usa `http://localhost:8080`; após uma abertura com resposta HTTP `201`, a coleção guarda o ID retornado para as consultas e a resolução.
-
-Ordem para demonstrar o fluxo:
-
-1. Execute **Login**.
-2. Execute **Abrir chamado** enviando título e descrição.
-3. Consulte a lista do usuário e os detalhes do chamado.
-4. Execute **Resolver chamado** com a solução aplicada.
-5. Confira o documento atualizado na coleção `chamados` do MongoDB.
-
-## Endpoints
-
-| Método | Endpoint | Acesso e resultado |
+| Método | Endpoint | Descrição |
 | --- | --- | --- |
-| `POST` | `/api/chamados` | Usuário autenticado; abre um chamado e retorna HTTP `201`. |
-| `GET` | `/api/chamados/usuario/{id}` | Lista chamados. `{id}` é o nome do usuário autenticado; técnicos podem consultar outro usuário. |
-| `GET` | `/api/chamados/{id}` | Consulta os dados e o status; disponível ao solicitante ou a um técnico. |
-| `PUT` | `/api/chamados/{id}/resolver` | Exige o perfil `TECNICO`; grava solução, técnico, data e status `RESOLVIDO`. |
+| `POST` | `/api/chamados` | Abre um chamado. Retorna `201 Created`. |
+| `GET` | `/api/chamados/usuario/{id}` | Lista chamados do solicitante autenticado. |
+| `GET` | `/api/chamados/{id}` | Consulta os dados e o status do chamado. |
+| `PUT` | `/api/chamados/{id}/resolver` | Registra a solução e conclui o chamado. |
 
-### Abrir chamado
-
-O corpo recebe somente título e descrição. O servidor registra o solicitante da sessão, a data de abertura e o status inicial `ABERTO`.
+Exemplo de abertura:
 
 ```json
 {
-  "titulo": "Título do chamado",
-  "descricao": "Descrição do problema"
+  "titulo": "Computador reiniciando",
+  "descricao": "O computador do setor de RH reinicia sozinho durante o uso."
 }
 ```
 
-O título é obrigatório e aceita até 120 caracteres. A descrição é obrigatória e aceita até 5.000 caracteres.
-
-### Resolver chamado
-
-A URL recebe o ID que foi retornado ao abrir o chamado. O corpo da requisição é:
+Exemplo de resolução:
 
 ```json
 {
-  "solucao": "Descrição da solução aplicada"
+  "solucao": "Verificada a memória e a temperatura; substituído o módulo com falha e validado o funcionamento."
 }
 ```
 
-A solução é obrigatória e aceita até 5.000 caracteres. Somente chamados com status `ABERTO` podem ser resolvidos. O servidor registra o técnico autenticado, a data da resolução e o status `RESOLVIDO`. Uma nova tentativa de alterar um chamado resolvido retorna HTTP `409`.
+O servidor preenche automaticamente o solicitante, a data de abertura e o status `ABERTO`. Na resolução, registra o técnico, a solução, a data e o status `RESOLVIDO`. Uma segunda tentativa de alteração retorna `409 Conflict`.
 
-## Validações e respostas
+### Postman
 
-- HTTP `400`: JSON inválido ou campo obrigatório ausente.
-- HTTP `401`: sessão não autenticada.
-- HTTP `403`: usuário sem permissão para a operação.
-- HTTP `404`: chamado não encontrado.
-- HTTP `409`: regra de negócio impede a alteração, como resolver novamente um chamado concluído.
+Importe `postman/ThinDesk.postman_collection.json` pelo menu **Import → Files**. A coleção inclui login, abertura, listagem, consulta e resolução. Após abrir um chamado, ela guarda o ID retornado para as requisições seguintes.
 
-## Conferir os dados no MongoDB
+## Banco de dados
 
-No MongoDB Compass, conecte-se a `mongodb://localhost:27017`, abra o banco `thindesk` e depois a coleção `chamados`.
+Para conferir a persistência local pelo MongoDB Compass, conecte-se a `mongodb://localhost:27017`, abra o banco `thindesk` e a coleção `chamados`. Os documentos incluem título, descrição, solicitante, status e datas; depois da resolução também incluem a solução e o técnico.
 
-Ao abrir um chamado, o documento contém `titulo`, `descricao`, `solicitante`, `status` e `dataAbertura`. Após a resolução, também contém `solucao`, `tecnico` e `dataResolucao`.
+## Publicação
+
+O projeto está preparado para construção pelo `Dockerfile` e usa a porta fornecida pela variável `PORT`. No Railway, configure:
+
+- `MONGODB_URI`: URI do MongoDB persistente;
+- `THINDESK_USER`: usuário público de demonstração;
+- `THINDESK_PASSWORD`: senha pública de demonstração.
+
+O login de demonstração é compartilhado e permite acessar a aplicação publicada. Use-o somente para a demonstração acadêmica; não reutilize senha pessoal. O link público será registrado aqui depois que o deploy for publicado e verificado.
+
+## Repositório
+
+[Microserviço de Chamados Técnicos no GitHub](https://github.com/Pedro-Pecegueiro/Microservico-de-Chamados-Tecnicos)

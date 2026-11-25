@@ -9,6 +9,9 @@ import com.pfc.thindesk.service.ClienteService;
 import com.pfc.thindesk.service.ChamadoService;
 import com.pfc.thindesk.service.HorarioAtendimentoService;
 import java.util.List;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +20,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class HomeController {
+
+    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter
+            .ofPattern("dd/MM/yyyy HH:mm")
+            .withZone(ZoneId.of("America/Sao_Paulo"));
 
     private static final Logger log = LoggerFactory.getLogger(HomeController.class);
 
@@ -34,11 +41,40 @@ public class HomeController {
 
     @GetMapping("/")
     public ModelAndView home() {
+        List<Chamado> chamados = chamadoService.listarChamados();
         ModelAndView modelAndView = new ModelAndView("layout");
+        modelAndView.addObject("totalChamados", chamados.size());
+        modelAndView.addObject("chamadosAbertos", chamados.stream()
+                .filter(chamado -> "ABERTO".equalsIgnoreCase(chamado.getStatus()))
+                .count());
+        modelAndView.addObject("chamadosResolvidos", chamados.stream()
+                .filter(chamado -> "RESOLVIDO".equalsIgnoreCase(chamado.getStatus()))
+                .count());
+        modelAndView.addObject("chamadosRecentes", chamados.stream()
+                .limit(5)
+                .map(chamado -> new ChamadoDashboard(
+                        chamado.getTitulo(),
+                        chamado.getDescricao(),
+                        chamado.getSolicitante(),
+                        formatarData(chamado.getDataAbertura()),
+                        chamado.getStatus()))
+                .toList());
         String fragment = "home :: content";
         log.info("Carregando fragmento: {}", fragment); // Log para depuração
         modelAndView.addObject("content", fragment);
         return modelAndView;
+    }
+
+    private static String formatarData(Instant data) {
+        return data == null ? "—" : FORMATO_DATA.format(data);
+    }
+
+    private record ChamadoDashboard(
+            String titulo,
+            String descricao,
+            String solicitante,
+            String dataAbertura,
+            String status) {
     }
 
     @GetMapping("/chamados")

@@ -2,7 +2,6 @@ package com.pfc;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,7 +27,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/css/**", "/dist/**", "/plugins/**", "/js/**", "/images/**").permitAll() // Permitir acesso à página de login e arquivos estáticos
-                .requestMatchers("/usuarios/**", "/clientes/**", "/ajustes-horarios/**", "/api/clientes/**").hasRole("ADMIN")
+                .requestMatchers("/", "/usuarios/**", "/clientes/**", "/ajustes-horarios/**", "/api/clientes/**")
+                    .hasRole("ADMIN")
+                .requestMatchers("/chamados/editar/**", "/chamados/atualizar/**", "/chamados/cancelar/**")
+                    .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/chamados/*/resolver").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/chamados/resolver/**").hasRole("ADMIN")
                 .anyRequest().authenticated() // Exigir autenticação para qualquer outra página
@@ -39,7 +41,11 @@ public class SecurityConfig {
             ))
             .formLogin(form -> form
                 .loginPage("/login") // Definir a URL da página de login personalizada
-                .defaultSuccessUrl("/", true) // Redirecionar para /home após login bem-sucedido
+                .successHandler((request, response, authentication) -> {
+                    boolean admin = authentication.getAuthorities().stream()
+                            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                    response.sendRedirect(request.getContextPath() + (admin ? "/" : "/chamados"));
+                })
                 .permitAll() // Permitir que todos acessem a página de login
             )
             .logout(logout -> logout

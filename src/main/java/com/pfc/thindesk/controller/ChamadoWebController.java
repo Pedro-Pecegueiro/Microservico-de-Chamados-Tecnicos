@@ -155,8 +155,8 @@ public class ChamadoWebController {
     }
 
     private void verificarAcesso(Chamado chamado, Authentication authentication) {
-        if (!authentication.getName().equals(chamado.getSolicitante()) && !ehAdmin(authentication)) {
-            throw new AccessDeniedException("Você não tem permissão para alterar este chamado.");
+        if (!ehAdmin(authentication)) {
+            throw new AccessDeniedException("Somente o ADMIN pode editar ou cancelar chamados.");
         }
     }
 

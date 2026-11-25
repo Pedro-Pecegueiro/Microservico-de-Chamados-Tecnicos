@@ -5,7 +5,7 @@
     <nav id="sidebar" aria-label="Navegação principal">
         <a class="sidebar-brand" th:href="@{/}">ThinDesk</a>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li class="nav-item" th:if="${admin}"><a class="nav-link" th:href="@{/}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" th:href="@{/chamados}"><i class="bi bi-headset"></i> Chamados</a></li>
             <li class="nav-item" th:if="${admin}"><a class="nav-link" th:href="@{/clientes}"><i class="bi bi-people"></i> Clientes</a></li>
             <li class="nav-item" th:if="${admin}"><a class="nav-link" th:href="@{/ajustes-horarios}"><i class="bi bi-clock"></i> Horário de Atendimento</a></li>

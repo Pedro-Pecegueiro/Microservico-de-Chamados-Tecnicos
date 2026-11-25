@@ -17,8 +17,8 @@ A versão `1.1.0` está definida no `pom.xml`.
 ## Funcionalidades
 
 - Login com sessão e controle de acesso por perfil.
-- Perfil **USUÁRIO**: abre chamados e acompanha, edita ou cancela somente os próprios chamados que ainda estejam abertos.
-- Perfil **ADMIN**: consulta a fila completa, registra a solução dos chamados, cadastra e desativa contas de usuário, gerencia clientes e configura horários de atendimento.
+- Perfil **USUÁRIO**: abre chamados e acompanha somente os chamados que abriu.
+- Perfil **ADMIN**: acessa o dashboard e a fila completa, edita ou cancela chamados abertos, registra soluções, cadastra e desativa contas de usuário, gerencia clientes e configura horários de atendimento.
 - Registro automático do solicitante, da data de abertura e do status `ABERTO`.
 - Registro da solução, do administrador responsável, da data de resolução e do status `RESOLVIDO`.
 - Bloqueio de edição, cancelamento ou nova resolução depois que um chamado for resolvido.
@@ -43,8 +43,8 @@ Contas públicas para demonstração:
 
 | Perfil | Usuário | Senha | Permissões principais |
 | --- | --- | --- | --- |
-| USUÁRIO | `usuario` | `usuario123` | Abrir e acompanhar os próprios chamados. |
-| ADMIN | `admin` | `admin123` | Acessar todos os chamados, resolvê-los e administrar contas, clientes e horários. |
+| USUÁRIO | `usuario` | `usuario123` | Abrir chamados e acompanhar os próprios chamados. |
+| ADMIN | `admin` | `admin123` | Ver o dashboard e todos os chamados; editar, cancelar ou resolver chamados abertos; administrar contas, clientes e horários. |
 
 Essas credenciais são destinadas à avaliação acadêmica. As senhas são armazenadas com hash BCrypt no MongoDB. A aplicação cria as duas contas na primeira inicialização se elas ainda não existirem.
 
@@ -89,24 +89,23 @@ O painel mantém a estrutura visual do ThinDesk e mostra os dados disponíveis n
 
 ## Chamados pela aplicação
 
-1. Entre com a conta **USUÁRIO** ou **ADMIN**.
-2. Abra **Chamados** no menu e selecione **Novo chamado**.
-3. Informe título e descrição. O sistema preenche solicitante, data e status automaticamente.
-4. O perfil USUÁRIO visualiza somente os chamados que abriu. Chamados ainda abertos podem ser editados ou cancelados por seu solicitante.
-5. Entre com a conta **ADMIN** para consultar a fila completa e informar a solução de um chamado aberto.
-6. Depois da resolução, o chamado exibe o status `RESOLVIDO` e a data correspondente; novas alterações são recusadas.
+1. Entre com a conta **USUÁRIO** para abrir chamados e acompanhar somente os que abriu. Após o login, essa conta vai direto à lista de chamados.
+2. Em **Chamados**, selecione **Novo chamado**, informe título e descrição e salve. Solicitante, data de abertura e status são preenchidos automaticamente.
+3. O perfil **USUÁRIO** consulta os detalhes e o status dos próprios chamados; não edita, cancela ou resolve solicitações.
+4. Entre com a conta **ADMIN** para acessar o dashboard e a fila completa. O administrador pode editar ou cancelar chamados abertos e registrar a solução aplicada.
+5. Depois da resolução, o chamado exibe o status `RESOLVIDO` e a data correspondente. Chamados resolvidos não podem ser alterados novamente.
 
 O ADMIN também encontra as telas de **Clientes**, **Horário de Atendimento** e **Contas de usuário** no menu lateral. Horários inválidos, com término anterior ou igual ao início, não são salvos.
 
 ## API REST de chamados
 
-Os endpoints exigem login. O perfil USUÁRIO só consulta chamados próprios; o ADMIN pode consultar qualquer solicitante ou chamado. Somente o ADMIN pode usar a operação de resolução.
+Os endpoints exigem login. O perfil USUÁRIO abre chamados e consulta somente os próprios. O ADMIN pode consultar qualquer solicitante ou chamado e é o único perfil autorizado a resolver solicitações.
 
 | Método | Endpoint | Permissão e resultado |
 | --- | --- | --- |
-| `POST` | `/api/chamados` | USUÁRIO ou ADMIN abre chamado; retorna `201 Created`. |
-| `GET` | `/api/chamados/usuario/{id}` | O usuário consulta a própria lista; ADMIN pode informar qualquer nome de usuário. |
-| `GET` | `/api/chamados/{id}` | O usuário consulta o próprio chamado; ADMIN pode consultar qualquer chamado. |
+| `POST` | `/api/chamados` | USUÁRIO abre chamado; retorna `201 Created`. |
+| `GET` | `/api/chamados/usuario/{id}` | USUÁRIO consulta a própria lista; ADMIN pode informar qualquer nome de usuário. |
+| `GET` | `/api/chamados/{id}` | USUÁRIO consulta o próprio chamado; ADMIN pode consultar qualquer chamado. |
 | `PUT` | `/api/chamados/{id}/resolver` | ADMIN registra a solução e conclui um chamado aberto. |
 
 Em `/api/chamados/usuario/{id}`, `{id}` é o nome de usuário. Nos outros endpoints, `{id}` é o identificador MongoDB retornado ao abrir o chamado.
